@@ -7,7 +7,7 @@ import utilities
 
 def change_v1_to_v2(v1_filename):
     v1 = open(v1_filename, 'r').read()
-    v2 = v1.replace('1.0','3.0')
+    v2 = v1.replace('1.0','2.0')
     f = open(v1_filename, 'w')
     f.write(v2)
     f.close()
@@ -43,7 +43,7 @@ def generate_2(original, v1_directory, v2_directory, key_file):
     assert(os.path.exists('/var/www/%s.tar.gz' % v2_directory))
 
 generate_2('game', 'game-1.0', 'game-2.0', 'main.py')
-#generate_2('selfupdater', 'selfupdater-1.0', 'selfupdater-3.0', 'main.py')
+#generate_2('selfupdater', 'selfupdater-1.0', 'selfupdater-2.0', 'main.py')
 
 def _test():
     import doctest
