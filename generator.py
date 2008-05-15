@@ -12,8 +12,13 @@ def change_v1_to_v2(v1_filename):
     f.write(v2)
     f.close()
 
-def generate_2(v1_directory, v2_directory, key_file):
+def generate_2(original, v1_directory, v2_directory, key_file):
+    print commands.getoutput('rm -rf %s' % v1_directory)
+    assert(not os.path.exists('%s' % v1_directory))
+
+    print commands.getoutput('cp -r %s %s' % (original, v1_directory))
     assert(os.path.exists('%s' % v1_directory))
+
 
     print commands.getoutput('rm -rf %s' % v2_directory)
     assert(not os.path.exists('%s' % v2_directory))
@@ -37,9 +42,8 @@ def generate_2(v1_directory, v2_directory, key_file):
     print commands.getoutput('mv %s.tar.gz /var/www/' % v2_directory)
     assert(os.path.exists('/var/www/%s.tar.gz' % v2_directory))
 
-print commands.getoutput('cp -r game game-1.0')
-generate_2('game-1.0', 'game-2.0', 'selfupdater.py')
-#generate_2('selfupdater', 'selfupdater-3.0', 'selfupdater.py')
+generate_2('game', 'game-1.0', 'game-2.0', 'selfupdater.py')
+#generate_2('selfupdater', 'selfupdater-1.0', 'selfupdater-3.0', 'selfupdater.py')
 
 def _test():
     import doctest
