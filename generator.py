@@ -37,6 +37,7 @@ def generate_2(v1_directory, v2_directory, key_file):
     print commands.getoutput('mv %s.tar.gz /var/www/' % v2_directory)
     assert(os.path.exists('/var/www/%s.tar.gz' % v2_directory))
 
+print commands.getoutput('cp -r game game-1.0')
 generate_2('game-1.0', 'game-2.0', 'selfupdater.py')
 #generate_2('selfupdater', 'selfupdater-3.0', 'selfupdater.py')
 
