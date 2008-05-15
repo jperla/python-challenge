@@ -17,6 +17,9 @@ def generate_2(v1_directory):
 
     v2_directory = 'game-2.0'
 
+    print commands.getoutput('rm -rf %s' % v2_directory)
+    assert(not os.path.exists('%s' % v2_directory))
+
     print commands.getoutput('cp -rf %s %s' % (v1_directory, v2_directory))
     assert(os.path.exists('%s' % v2_directory))
 
