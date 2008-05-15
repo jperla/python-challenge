@@ -1,4 +1,4 @@
 *.pyc
-game-2.0*
-selfupdater*
+game-*
+selfupdater-*
 *.jpg
