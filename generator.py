@@ -24,10 +24,11 @@ def generate_2(v1_filename):
     v2_file.close()
 
     print commands.getoutput('tar cf %s.tar %s' % (v2_filename, v2_filename))
+    print commands.getoutput('chmod 777 %s.tar' % v2_filename)
+    print commands.getoutput('sudo mv %s.tar /var/www/' % v2_filename)
     print commands.getoutput('rm %s' % v2_filename)
 
     assert(os.path.exists('%s' % v1_filename))
-    assert(os.path.exists('%s.tar' % v2_filename))
 
 generate_2('game.py')
 
