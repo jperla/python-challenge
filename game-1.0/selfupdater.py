@@ -42,27 +42,23 @@ class SelfUpdater(object):
         pass
 
     def run(self):
-        print 'at beginning of run in %s' % self.version #DEBUG: jperla: 
         try:
             self.run_implementation()
             #the run should be a while loop, so it must have executed improperly
             self.executes_improperly(Exception('stopped running main'))
         except Exception, e:
-            print 'threw error in run in %s' % self.version #DEBUG: jperla: 
             self.executes_improperly(e)
 
     def executes_properly(self):
         if self.update_success is not None:
-            q = self.update_success
-            q()
+            self.update_success()
             self.update_success = None
             self.update_failure = None
             
     def executes_improperly(self, error=None):
-        logging.error('Error b/c improperly run: %s' % error) #TODO: jperla: fix
+        logging.error('Error-improperly run: %s' % error)
         if self.update_failure is not None:
-            q = self.update_failure
-            q()
+            self.update_failure()
         else:
             raise Exception('Executed improperly somehow', e)
 
@@ -75,7 +71,7 @@ class SelfUpdater(object):
 
     def update_to_latest_version_given_url(self, latest_version_url):
         #Assumes update is always a .tar.gz
-        assert(latest_version_url.endswith('.tar.gz')) #DEBUG: jperla: turn on
+        assert(latest_version_url.endswith('.tar.gz'))
 
         #get the file name in the url
         filename = self.__get_filename_in_url(latest_version_url)
@@ -110,9 +106,9 @@ class SelfUpdater(object):
 
         new_update_succeeded = partial(self.update_succeeded, 
                                    os.getcwd(),
-                                   os.path.abspath(os.path.pardir) + filename)
+                                   os.path.abspath(os.path.pardir)+'/'+filename)
         new_update_failed = partial(self.update_failed, 
-                                 os.path.abspath(os.path.pardir) + filename)
+                                 os.path.abspath(os.path.pardir)+'/'+filename)
         selfupdater.update_success = new_update_succeeded
         selfupdater.update_failure = new_update_failed
 
@@ -120,15 +116,15 @@ class SelfUpdater(object):
         selfupdater.run()
 
     def update_succeeded(self, cwd, newdir):
+        #TODO: jperla: make it actually remove
         logging.debug('remove %s' % cwd)
+        logging.debug('newdir %s' % newdir)
         os.chdir(newdir)
-        sys.exit() #DEBUG: jperla:
         del(self)
 
     def update_failed(self, newdir):
         logging.debug('remove %s' % newdir)
         #continue since the other thing stopped
-        sys.exit() #DEBUG: jperla: 
 
     def __get_filename_in_temp_path(self, path):
         """
@@ -177,13 +173,10 @@ class SimpleSelfUpdater(SelfUpdater):
     def run_implementation(self):
         while True:
             print self.version
-            print 'at beginning of impl in %s' % self.version #DEBUG: jperla: 
             try:
                 self.update_if_newer_version()
             except Exception, e:
-                print 'threw errorin impl in %s' % self.version #DEBUG: jperla
                 logging.error('Exception: %s' % e)
-            print 'executes proper in impl in %s' % self.version #DEBUG: jperla
             self.executes_properly()
     
     def do_while_downloading(self, total_to_download, total_downloaded):
