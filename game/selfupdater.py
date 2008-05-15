@@ -6,11 +6,7 @@ import tempfile
 import logging
 import urllib2
 
-import pygame
-
 from functools import partial
-
-import pygame
 
 import spider
 import downloadprogress
@@ -97,35 +93,35 @@ class SelfUpdater(object):
         logging.debug(commands.getoutput('rm -rf %s' % filename))
         logging.debug(commands.getoutput('rm -f %s' % temp_filename))
 
-        #wow that's ugly, there's got to be a better way!
-        file_to_evaluate = '%s' % (os.path.pardir+'/'+filename)
-        logging.debug('evaluating %s' % file_to_evaluate)
+        #wow THIS IS UGLY, there's got to be a better way!
+        new_version_path = '%s' % (os.path.pardir+'/'+filename)
+        logging.debug('evaluating %s' % new_version_path)
 
-        sys.path.insert(0, file_to_evaluate)
-        #TODO: jperla: fix this terminology
-        from selfupdater import selfupdater
-        #TODO: jperla: i can't believe that this worked!
+        sys.path.insert(0, new_version_path)
+        from main import main_entry
+        logging.debug('new version to boot into: %s' % main_entry.version)
+        assert(float(main_entry.version) > float(self.version)) ##DEBUG:  
 
         new_update_succeeded = partial(self.update_succeeded, 
                                    os.getcwd(),
                                    os.path.abspath(os.path.pardir)+'/'+filename)
         new_update_failed = partial(self.update_failed, 
                                  os.path.abspath(os.path.pardir)+'/'+filename)
-        selfupdater.update_success = new_update_succeeded
-        selfupdater.update_failure = new_update_failed
+        main_entry.update_success = new_update_succeeded
+        main_entry.update_failure = new_update_failed
 
         #TODO: jperla: run this in new thread?
-        selfupdater.run()
+        main_entry.run()
 
     def update_succeeded(self, cwd, newdir):
         #TODO: jperla: make it actually remove
-        logging.debug('remove %s' % cwd)
+        logging.debug(commands.getoutput('rm -rf %s' % cwd))
         logging.debug('newdir %s' % newdir)
         os.chdir(newdir)
         del(self)
 
     def update_failed(self, newdir):
-        logging.debug('remove %s' % newdir)
+        logging.debug(commands.getoutput('rm -rf %s' % newdir))
         #continue since the other thing stopped
 
     def __get_filename_in_temp_path(self, path):
@@ -183,122 +179,4 @@ class SimpleSelfUpdater(SelfUpdater):
     def do_while_downloading(self, total_to_download, total_downloaded):
         pass #self._percentage_progress(total_to_download, total_downloaded)
 
-
-
-
-class GameSelfUpdater(SelfUpdater):
-    pygame.init()
-    pygame.font.init()
-
-    downloading = False
-    everything_works = True
-
-    def __init__(self):
-        version = '1.0'
-        is_new_version_url = 'http://localhost/version.txt'
-        SelfUpdater.__init__(self, version, is_new_version_url)
-        self.progress = 0
-        self.text = 'gar'
-
-        self.blue = (0, 0, 255)
-        self.white = (255, 255, 255)
-        self.black = (0, 0, 0)
-        self.green = (0, 255, 0)
-
-
-        self.size = (self.width, self.height) = (800, 480)
-        self.screen = pygame.display.set_mode(self.size)
-
-    def run_implementation(self):
-        while True:
-            print self.version #DEBUG: jperla: 
-            if self.up_to_date:
-                self.progress = 100
-                self.text = 'new: %s' % (self.version)
-
-            try:
-                self.update_if_newer_version()
-            except Exception, e:
-                logging.error('Exception: %s' % e)
-                self.text = 'Failed: could not update version'
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: sys.exit()
-
-            self.show_everything()
-
-            self.executes_properly()
-    
-    def do_while_downloading(self, total_to_download, total_downloaded):
-        percent = self._percentage_progress(total_to_download, total_downloaded)
-        self.progress = int(percent)
-        #print self.progress #DEBUG: jperla: 
-        self.text = '%s%% - downloading... - old: %s' % (self.progress, 
-                                                         self.version)
-        self.show_everything()
-
-    def get_image_to_display():
-        image_to_display = pygame.image.load('ball.bmp')
-        return image_to_display
-
-
-    def blit_image_to_display(self,
-                              image=get_image_to_display(),
-                              ):
-        self.screen.blit(image, (self.width / 5, self.height / 5))
-
-
-
-    def blit_text(self,
-                  text,
-                  font=pygame.font.Font(None, 22),
-                  ):
-        color=self.white
-        text_surface = font.render(text, 1, color)
-        self.screen.blit(text_surface, (self.width / 2, self.height / 2))
-
-    def blit_progress_bar(self, 
-                          percentage,
-                          ):
-        progress_bar_location = (self.width / 2, self.height / 2 + 50)
-        location=progress_bar_location
-
-        #percentage happens to be exact number of pixels ! ;)
-        progress_size = 100
-        border_size = 2
-        height = 20
-
-        border = (location[0] - border_size, 
-                location[1] - border_size,
-                progress_size + border_size * 2,
-                height + border_size * 2)
-        pygame.draw.rect(self.screen, self.black, border)
-
-        inside = (location[0], location[1], progress_size, height)
-        pygame.draw.rect(self.screen, self.white, inside)
-
-        progress = (location[0], location[1], percentage, height)
-        pygame.draw.rect(self.screen, self.green, progress)
-
-
-    
-    def do_cool_stuff(self):
-        self.blit_image_to_display()
-
-    def show_everything(self):
-        self.screen.fill(self.blue)
-        self.blit_progress_bar(self.progress)
-        self.blit_text(self.text)
-        if self.up_to_date:
-            self.do_cool_stuff()
-        pygame.display.flip()
-
-
-
-
-selfupdater = GameSelfUpdater()
-#selfupdater.run()
-
-if __name__ == '__main__':
-    selfupdater.run()
 

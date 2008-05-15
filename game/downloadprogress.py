@@ -1,3 +1,7 @@
+'''
+I know you use Ubuntu
+sudo apt-get install python-pycurl
+'''
 import tempfile
 import spider
 import pycurl
