@@ -86,6 +86,8 @@ class SelfUpdater(object):
         filename = self.__get_filename_in_temp_path(temp_filename)
 
         #assumes we want to put the tarfile in parent of current directory
+        #Yes, I know commands is old.  But this works right now
+        #and I don't want to move this all to subprocess.
         logging.debug(commands.getoutput('tar xzvf %s' % temp_filename))
         logging.debug(commands.getoutput('mv %s %s' % (filename, 
                                             os.path.abspath(os.path.pardir))))
@@ -114,7 +116,6 @@ class SelfUpdater(object):
         main_entry.run()
 
     def update_succeeded(self, cwd, newdir):
-        #TODO: jperla: make it actually remove
         logging.debug(commands.getoutput('rm -rf %s' % cwd))
         logging.debug('newdir %s' % newdir)
         os.chdir(newdir)
