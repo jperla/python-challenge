@@ -16,7 +16,7 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 green = (0, 255, 0)
 
-size = (width, height) = (800, 600)
+size = (width, height) = (800, 480)
 screen = pygame.display.set_mode(size)
 
 
