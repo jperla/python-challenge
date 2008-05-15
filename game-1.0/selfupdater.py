@@ -42,27 +42,33 @@ class SelfUpdater(object):
         pass
 
     def run(self):
+        print 'at beginning of run in %s' % self.version #DEBUG: jperla: 
         try:
             self.run_implementation()
             #the run should be a while loop, so it must have executed improperly
             self.executes_improperly(Exception('stopped running main'))
         except Exception, e:
+            print 'threw error in run in %s' % self.version #DEBUG: jperla: 
             self.executes_improperly(e)
 
     def executes_properly(self):
         if self.update_success is not None:
-            self.update_success()
-            self.update_success = none
+            q = self.update_success
+            q()
+            self.update_success = None
+            self.update_failure = None
             
     def executes_improperly(self, error=None):
+        logging.error('Error b/c improperly run: %s' % error) #TODO: jperla: fix
         if self.update_failure is not None:
-            self.update_failure()
+            q = self.update_failure
+            q()
         else:
             raise Exception('Executed improperly somehow', e)
 
     def update_if_newer_version(self):
         latest_version, latest_version_url,_ = \
-                                spider.get(is_new_version_url).split('\n')
+                                spider.get(self.is_new_version_url).split('\n')
         if self.__is_newer_version(latest_version):
             self.up_to_date = False
             self.update_to_latest_version_given_url(latest_version_url)
@@ -89,6 +95,8 @@ class SelfUpdater(object):
         logging.debug(commands.getoutput('tar xzvf %s' % temp_filename))
         logging.debug(commands.getoutput('mv %s %s' % (filename, 
                                             os.path.abspath(os.path.pardir))))
+        #TODO: jperla: why need to remove when already moved???
+        logging.debug(commands.getoutput('rm -rf %s' % filename))
         logging.debug(commands.getoutput('rm -f %s' % temp_filename))
 
         #wow that's ugly, there's got to be a better way!
@@ -100,15 +108,13 @@ class SelfUpdater(object):
         from selfupdater import selfupdater
         #TODO: jperla: i can't believe that this worked!
 
-        update_succeeded = partial(self.update_succeeded, 
-                                   self,
+        new_update_succeeded = partial(self.update_succeeded, 
                                    os.getcwd(),
                                    os.path.abspath(os.path.pardir) + filename)
-        update_failed = partial(self.update_failed, 
-                                 self,
+        new_update_failed = partial(self.update_failed, 
                                  os.path.abspath(os.path.pardir) + filename)
-        selfupdater.update_success = self.update_succeeded
-        selfupdater.update_failure = self.update_failed
+        selfupdater.update_success = new_update_succeeded
+        selfupdater.update_failure = new_update_failed
 
         #TODO: jperla: run this in new thread?
         selfupdater.run()
@@ -163,25 +169,27 @@ class SelfUpdater(object):
 
 
 class SimpleSelfUpdater(SelfUpdater):
-    def __init__(self, version, is_new_version_url):
+    def __init__(self):
+        version = '1.0'
+        is_new_version_url = 'http://localhost/version_test.txt'
         SelfUpdater.__init__(self, version, is_new_version_url)
 
     def run_implementation(self):
         while True:
             print self.version
+            print 'at beginning of impl in %s' % self.version #DEBUG: jperla: 
             try:
                 self.update_if_newer_version()
             except Exception, e:
+                print 'threw errorin impl in %s' % self.version #DEBUG: jperla
                 logging.error('Exception: %s' % e)
+            print 'executes proper in impl in %s' % self.version #DEBUG: jperla
             self.executes_properly()
     
     def do_while_downloading(self, total_to_download, total_downloaded):
         print self._percentage_progress(total_to_download, total_downloaded)
 
-__VERSION__ = '1.0'
-is_new_version_url = 'http://localhost/version_test.txt'
-
-selfupdater = SimpleSelfUpdater(__VERSION__, is_new_version_url)
+selfupdater = SimpleSelfUpdater()
 #selfupdater.run()
 
 if __name__ == '__main__':
